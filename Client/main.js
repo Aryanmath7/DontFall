@@ -29,11 +29,23 @@ scene.add(cube);
 function createPlatform(data) {
     console.log("Creating platform with data:", data);
     const platformGeometry = new THREE.BoxGeometry(data.size, 0.1, data.size);
-    const platformMaterial = new THREE.MeshNormalMaterial();
+    // Generate a random color
+    const randomColor = new THREE.Color(Math.random(), Math.random(), Math.random());
+    const platformMaterial = new THREE.MeshStandardMaterial({ color: randomColor });
     const platform = new THREE.Mesh(platformGeometry, platformMaterial);
     platform.position.set(data.x, data.y, data.z);
     scene.add(platform);
 }
+
+// Add ambient light
+const ambientLight = new THREE.AmbientLight(0x404040); // Soft white light
+scene.add(ambientLight);
+// Add directional light
+const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+directionalLight.position.set(5, 10, 7.5).normalize();
+scene.add(directionalLight);
+
+
 
 // Animation loop
 function animate() {
