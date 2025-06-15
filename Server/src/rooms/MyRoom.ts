@@ -8,6 +8,8 @@ export class MyRoom extends Room<MyRoomState> {
   physicsWorld: CANNON.World | null = null;
   platformData: { x: number, y: number, z: number, size: number }[] = [];
 
+  players: { [sessionId: string]: any } = {};
+
   onCreate (options: any) {
 
     //#region Create Physics World
@@ -17,7 +19,7 @@ export class MyRoom extends Room<MyRoomState> {
     this.physicsWorld.gravity.set(0, -9.82, 0); // earth gravity
 
     // Create a 12x12 grid of static ground cubes to form a large platform
-    const gridSize = 8;
+    const gridSize = 13;
     const cubeSize = 1;
     const halfCube = cubeSize / 2;
 
@@ -53,6 +55,9 @@ export class MyRoom extends Room<MyRoomState> {
 
   onJoin (client: Client, options: any) {
     console.log(client.sessionId, "joined!");
+
+
+
   }
 
   onLeave (client: Client, consented: boolean) {

@@ -1,42 +1,20 @@
 import * as THREE from './node_modules/three/src/Three.js';
 import * as Networking from './Networking/ClientConnections.js';
+import * as CameraHelper from './Camera/CameraHelper.js';
+import * as Loaders from './Loaders/loaders.js';
 
+//#region Create scene, camera, and renderer
 // Create scene
 const scene = new THREE.Scene();
-
-// Create camera
-const camera = new THREE.PerspectiveCamera(
-    60, window.innerWidth / window.innerHeight, 0.1, 1000
-);
-camera.position.y = 5;
-camera.position.x = 5;
-camera.position.z = 15;
-
-
+const camera = CameraHelper.createCamera();
 // Create renderer
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// Add a cube
-const geometry = new THREE.BoxGeometry();
-const material = new THREE.MeshNormalMaterial();
-const cube = new THREE.Mesh(geometry, material);
-scene.add(cube);
+//#endregion
 
-
-// Create a platform based on the received data
-function createPlatform(data) {
-    console.log("Creating platform with data:", data);
-    const platformGeometry = new THREE.BoxGeometry(data.size, 0.1, data.size);
-    // Generate a random color
-    const randomColor = new THREE.Color(Math.random(), Math.random(), Math.random());
-    const platformMaterial = new THREE.MeshStandardMaterial({ color: randomColor });
-    const platform = new THREE.Mesh(platformGeometry, platformMaterial);
-    platform.position.set(data.x, data.y, data.z);
-    scene.add(platform);
-}
-
+//#region Lighting
 // Add ambient light
 const ambientLight = new THREE.AmbientLight(0x404040); // Soft white light
 scene.add(ambientLight);
@@ -44,17 +22,39 @@ scene.add(ambientLight);
 const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
 directionalLight.position.set(5, 10, 7.5).normalize();
 scene.add(directionalLight);
+//#endregion
+
+//#region Conect and Create Platform
+let connectionObject = await Networking.connect();
+let platformData = await Networking.getPlatformData(connectionObject.room);
+
+platformData.forEach(data => {
+    Loaders.createCube(scene, data);
+});
+
+camera.position.set(6,5,15);
+camera.lookAt(new THREE.Vector3(6, 0, 6));
+
+//#endregion
+
+//#region Temp Helpers
+const gridHelper = new THREE.GridHelper(40, 40); // size, divisions
+scene.add(gridHelper);
+
+const axesHelper = new THREE.AxesHelper(5);
+scene.add(axesHelper);
+//#endregion
+
 
 
 
 // Animation loop
 function animate() {
     requestAnimationFrame(animate);
-    cube.rotation.x += 0.01;
-    cube.rotation.y += 0.01;
     renderer.render(scene, camera);
 }
 animate();
+
 
 // Handle window resize
 window.addEventListener('resize', () => {
@@ -62,12 +62,3 @@ window.addEventListener('resize', () => {
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
 });
-
-let connectionObject = await Networking.connect();
-let platformData = await Networking.getPlatformData(connectionObject.room);
-
-platformData.forEach(data => {
-    createPlatform(data);
-});
-
-camera.lookAt(4,4,4);
